@@ -13,11 +13,14 @@
 # already installed — no workspace discovery, no resolver, no network. Startup is
 # instant and identical from any directory.
 #
+# pydantic must be pinned too: pydantic >=2.14 removed `eval_type_backport`, which
+# mcp 1.6 imports — an unpinned resolve breaks the import chain (ImportError).
+#
 # Falls back to uv (self-bootstrapping) if the venv is missing, so a fresh
 # machine still works before the venv exists.
 # Recreate the venv:
 #   uv venv "$ROOT/.mcp-venv"
-#   uv pip install --python "$ROOT/.mcp-venv/bin/python" "mcp<1.7"
+#   uv pip install --python "$ROOT/.mcp-venv/bin/python" "mcp<1.7" "pydantic>=2.8,<2.14"
 set -e
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 SRV="$ROOT/integrations/obsidian-mcp-server/server.py"
@@ -25,5 +28,5 @@ VENV_PY="$ROOT/.mcp-venv/bin/python"
 if [ -x "$VENV_PY" ]; then
   exec "$VENV_PY" "$SRV"
 else
-  exec uv run --no-project --with "mcp<1.7" python "$SRV"
+  exec uv run --no-project --with "mcp<1.7" --with "pydantic>=2.8,<2.14" python "$SRV"
 fi
